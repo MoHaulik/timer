@@ -159,6 +159,11 @@
         const modes = ['Pomodoro', 'Break', 'SoMe'];
         const maxDurations = [25 * 60, 5 * 60, 7 * 60]; // in seconds
 
+        // Request notification permission on page load
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+
         function setRotation(degrees) {
             knob.style.transform = `rotate(${degrees}deg) translate(120px) rotate(-${degrees}deg)`;
         }
@@ -197,7 +202,15 @@
 
         function playAlarm() {
             const audio = new Audio(currentMode === 1 ? '2.mp3' : '1.mp3');
-            audio.play();
+            audio.play().catch(() => {
+                // Fallback to notification if audio play fails
+                if (Notification.permission === 'granted') {
+                    new Notification('Timer Completed!', {
+                        body: `${modes[currentMode]} mode is over!`,
+                        icon: 'alarm-icon.png' // Add an icon if you want
+                    });
+                }
+            });
         }
 
         function showModeName() {
