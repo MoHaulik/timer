@@ -211,21 +211,25 @@
             display.style.opacity = '1';
         }
 
-        container.addEventListener('mousedown', (e) => {
+        function startDrag(e) {
             isDragging = true;
             const rect = container.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startAngle = Math.atan2(clientY - centerY, clientX - centerX);
             clearTimeout(modeChangeTimeout);
-        });
+        }
 
-        document.addEventListener('mousemove', (e) => {
+        function drag(e) {
             if (!isDragging) return;
             const rect = container.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
-            const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const currentAngle = Math.atan2(clientY - centerY, clientX - centerX);
             angle += (currentAngle - startAngle) * (180 / Math.PI);
             angle = (angle + 360) % 360;
             setRotation(angle);
@@ -242,9 +246,9 @@
                 display.textContent = formatTime(timerDuration);
                 setProgress(0);
             }
-        });
+        }
 
-        document.addEventListener('mouseup', () => {
+        function endDrag() {
             if (isDragging) {
                 isDragging = false;
                 modeChangeTimeout = setTimeout(() => {
@@ -252,7 +256,16 @@
                     startTimer();
                 }, 2000);
             }
-        });
+        }
+
+        container.addEventListener('mousedown', startDrag);
+        container.addEventListener('touchstart', startDrag);
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
 
         // Initialize
         setRotation(0);
