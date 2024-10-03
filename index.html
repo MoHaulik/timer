@@ -155,6 +155,10 @@
         <div class="mode-name"></div>
     </div>
 
+    <!-- Sound Effects -->
+    <audio id="hover-sound" src="Hover.wav"></audio>
+    <audio id="click-sound" src="click.mp3"></audio>
+
     <script>
         const knob = document.querySelector('.knob');
         const display = document.querySelector('.display');
@@ -164,6 +168,10 @@
         const container = document.querySelector('.timer-container');
         const canvas = document.querySelector('.connecting-circle');
         const ctx = canvas.getContext('2d');
+
+        // Sound effects
+        const hoverSound = document.getElementById('hover-sound');
+        const clickSound = document.getElementById('click-sound');
 
         let angle = 0;
         let isDragging = false;
@@ -177,11 +185,6 @@
 
         const modes = ['Pomodoro', 'Break', 'SoMe'];
         const maxDurations = [25 * 60, 5 * 60, 7 * 60]; // in seconds
-
-        // Request notification permission on page load
-        if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
 
         function setRotation(degrees) {
             knob.style.transform = `rotate(${degrees}deg) translate(120px) rotate(-${degrees}deg)`;
@@ -220,18 +223,29 @@
             setProgress(0);
             timerInterval = setInterval(updateTimer, 1000);
             animateConnectingCircle();
+
+            // Play the click sound when the timer starts
+            clickSound.play();
         }
 
         function playAlarm() {
-            const audio = new Audio(currentMode === 1 ? '2.mp3' : '1.mp3');
-            audio.play().catch(() => {
-                if (Notification.permission === 'granted') {
-                    new Notification('Timer Completed!', {
-                        body: `${modes[currentMode]} mode is over!`,
-                        icon: 'alarm-icon.png' // Add an icon if you want
+            let alarmCount = 0;
+            const alarmAudio = new Audio('1.mp3');
+
+            function playAlarmSound() {
+                if (alarmCount < 5) {
+                    alarmAudio.play().then(() => {
+                        alarmCount++;
+                        setTimeout(playAlarmSound, alarmAudio.duration * 1000);
                     });
+                } else {
+                    // After playing the alarm 5 times, reset to show the current time
+                    updateCurrentTime();
+                    isKnobMoved = false; // Reset to show time mode
                 }
-            });
+            }
+
+            playAlarmSound();
         }
 
         function showModeName() {
@@ -289,6 +303,9 @@
                 timerDuration = maxDurations[currentMode];
                 display.textContent = formatTime(timerDuration);
                 setProgress(0);
+
+                // Play the hover sound when a new mode is hovered over
+                hoverSound.play();
             }
         }
 
