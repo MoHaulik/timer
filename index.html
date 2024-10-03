@@ -151,7 +151,7 @@
             <div class="mode-indicator" style="bottom: 15%; left: 50%;"></div>
         </div>
         <div class="knob"></div>
-        <div class="display">00:00</div>
+        <div class="display">--:--</div>
         <div class="mode-name"></div>
     </div>
 
@@ -173,6 +173,7 @@
         let timerInterval;
         let modeChangeTimeout;
         let animationFrame;
+        let isKnobMoved = false;
 
         const modes = ['Pomodoro', 'Break', 'SoMe'];
         const maxDurations = [25 * 60, 5 * 60, 7 * 60]; // in seconds
@@ -224,7 +225,6 @@
         function playAlarm() {
             const audio = new Audio(currentMode === 1 ? '2.mp3' : '1.mp3');
             audio.play().catch(() => {
-                // Fallback to notification if audio play fails
                 if (Notification.permission === 'granted') {
                     new Notification('Timer Completed!', {
                         body: `${modes[currentMode]} mode is over!`,
@@ -245,8 +245,18 @@
             display.style.opacity = '1';
         }
 
+        function updateCurrentTime() {
+            if (!isKnobMoved) {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                display.textContent = `${hours}:${minutes}`;
+            }
+        }
+
         function startDrag(e) {
             isDragging = true;
+            isKnobMoved = true;
             const rect = container.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
@@ -297,7 +307,7 @@
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
             
-            const time = Date.now() * 0.0005; // Slowed down the animation
+            const time = Date.now() * 0.0005;
             const radius = 135;
             
             ctx.beginPath();
@@ -312,7 +322,6 @@
                 ctx.moveTo(x, y);
                 ctx.lineTo(nextX, nextY);
                 
-                // Changed color to match the design better
                 ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 + 0.2 * Math.sin(time + i * 0.2)})`;
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
@@ -336,7 +345,8 @@
         setRotation(0);
         setProgress(0);
         timerDuration = maxDurations[currentMode];
-        display.textContent = formatTime(timerDuration);
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
     </script>
 </body>
 </html>
