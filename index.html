@@ -351,12 +351,16 @@
 
         container.addEventListener('mousedown', startDrag);
         container.addEventListener('touchstart', startDrag);
+        container.addEventListener('mouseover', () => hoverSound.play());
+        container.addEventListener('touchstart', () => hoverSound.play());
 
         document.addEventListener('mousemove', drag);
         document.addEventListener('touchmove', drag);
 
         document.addEventListener('mouseup', endDrag);
         document.addEventListener('touchend', endDrag);
+        container.addEventListener('mouseup', () => clickSound.play());
+        container.addEventListener('touchend', () => clickSound.play());
 
         // Initialize
         setRotation(0);
