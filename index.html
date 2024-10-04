@@ -278,6 +278,9 @@
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             startAngle = Math.atan2(clientY - centerY, clientX - centerX);
             clearTimeout(modeChangeTimeout);
+
+            // Play hover sound when starting to drag the knob
+            hoverSound.play();
         }
 
         function drag(e) {
@@ -303,9 +306,6 @@
                 timerDuration = maxDurations[currentMode];
                 display.textContent = formatTime(timerDuration);
                 setProgress(0);
-
-                // Play the hover sound when a new mode is hovered over
-                hoverSound.play();
             }
         }
 
@@ -316,6 +316,9 @@
                     hideModeName();
                     startTimer();
                 }, 2000);
+
+                // Play click sound only if the knob was being dragged
+                clickSound.play();
             }
         }
 
@@ -351,16 +354,12 @@
 
         container.addEventListener('mousedown', startDrag);
         container.addEventListener('touchstart', startDrag);
-        container.addEventListener('mouseover', () => hoverSound.play());
-        container.addEventListener('touchstart', () => hoverSound.play());
 
         document.addEventListener('mousemove', drag);
         document.addEventListener('touchmove', drag);
 
         document.addEventListener('mouseup', endDrag);
         document.addEventListener('touchend', endDrag);
-        container.addEventListener('mouseup', () => clickSound.play());
-        container.addEventListener('touchend', () => clickSound.play());
 
         // Initialize
         setRotation(0);
